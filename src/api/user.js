@@ -10,7 +10,9 @@ export const login = ({ mobile, code }) => {
   return request({
     method: 'POST',
     url: '/app/v1_0/authorizations',
-    mobile,
-    code
+    data: {
+      mobile,
+      code
+    }
   })
 }

@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { login } from '@/api/login'
+import { login } from '@/api/user'
 export default {
   name: 'LoginIndex',
   data () {
@@ -85,7 +85,13 @@ export default {
         this.loadingLogin = true
         let data = await login(this.user)
         this.$store.commit('setUser', data)
-        console.log(data)
+        /**
+         * 这里先简单粗暴的跳转到首页
+         * 真实的业务要处理跳转到之前过来的页面
+         */
+        this.$router.push({
+          name: 'home'
+        })
       } catch (err) {
         console.log(err)
         console.log('登录失败')
