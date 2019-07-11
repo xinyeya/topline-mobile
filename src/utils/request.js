@@ -1,20 +1,29 @@
 import axios from 'axios'
+import store from '@/store'
+
 /**
  * axios.create 用于创建一个 axios 实例，该实例和 axios 的功能是一模一样的
- * 说白了就是克隆一个 axios
- * 为什么要这么做，我们可以拥有多个不同请求的请求函数，而他们的配置可能是不一样的
- * 例如有些项目中可能涉及到使用不同的接口路径
+ * 说白了就是克隆了一个 axios
+ * 为什么要这样做：我们可以拥有多个不同的请求函数，而他们的配置可能是不一样的
+ * 例如有些项目中可能会涉及到使用不同的接口路径
  *    http://toutiao.course.itcast.cn
  *    http://a.com
  *    http://b.com
  */
 const request = axios.create({
-  baseURL: 'http://ttapi.research.itcast.cn'
+  baseURL: 'http://ttapi.research.itcast.cn/' // 线上接口地址
+  // baseURL: 'http://toutiao.course.itcast.cn' // 本地接口地址
 })
 
 // Add a request interceptor
 request.interceptors.request.use(function (config) {
   // Do something before request is sent
+
+  // // 如果登录了，则统一给接口添加用户 token
+  const { user } = store.state
+  if (user) {
+    config.headers.Authorization = `Bearer ${user.token}`
+  }
   return config
 }, function (error) {
   // Do something with request error

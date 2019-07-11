@@ -27,7 +27,8 @@ import {
   Tab,
   Tabs,
   List,
-  PullRefresh
+  PullRefresh,
+  Toast
 } from 'vant'
 
 Vue
@@ -43,6 +44,7 @@ Vue
   .use(Tabs)
   .use(List)
   .use(PullRefresh)
+  .use(Toast)
 
 Vue.use(VeeValidate, {
   events: '' // 禁用默认事件验证
@@ -50,6 +52,18 @@ Vue.use(VeeValidate, {
 })
 
 Validator.localize('zh_CN', zhCN)
+
+Vue.prototype.$sleep = time => {
+  return new Promise((resolve, reject) => {
+    window.setTimeout(resolve, time)
+  })
+}
+
+Vue.prototype.$sleep = time => {
+  return new Promise((resolve, reject) => {
+    window.setTimeout(resolve, time)
+  })
+}
 
 Vue.config.productionTip = false
 
