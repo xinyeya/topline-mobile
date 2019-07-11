@@ -8,13 +8,9 @@ import store from './store'
  */
 import 'amfe-flexible'
 
-/**
- * 方便开发，暂时引入所有组件
- */
-// import Vant from 'vant'
-// import 'vant/lib/index.css'
-
-// Vue.use(Vant)
+// 表单验证插件
+import VeeValidate, { Validator } from 'vee-validate'
+import zhCN from 'vee-validate/dist/locale/zh_CN'
 
 /**
  * 后面打包时重新导入
@@ -47,6 +43,13 @@ Vue
   .use(Tabs)
   .use(List)
   .use(PullRefresh)
+
+Vue.use(VeeValidate, {
+  events: '' // 禁用默认事件验证
+  // events: 'change'
+})
+
+Validator.localize('zh_CN', zhCN)
 
 Vue.config.productionTip = false
 

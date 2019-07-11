@@ -9,24 +9,24 @@
       <van-cell-group>
         <van-field
           v-model="user.mobile"
-          required
           clearable
           focus
           :border="true"
           label="用户名"
           placeholder="请输入手机号"
-          :error-message="errors.mobile"
-          @click-right-icon="$toast('question')"
+          v-validate="'required'"
+          name="mobile"
+          :error-message="errors.first('mobile')"
         />
 
         <van-field
           v-model="user.code"
-          :border="true"
           type="password"
-          label="验证码"
-          placeholder="请输入验证码"
-          :error-message="errors.code"
-          required
+          label="密码"
+          v-validate="'required'"
+          name="code"
+          placeholder="请输入密码"
+          :error-message="errors.first('code')"
         />
       </van-cell-group>
       <!-- 按钮登录 -->
@@ -34,7 +34,7 @@
         <van-button
           type="info"
           class="login-btn"
-          :loading="loadingLogin"
+          :loading="loginLoading"
           loading-text="登录中..."
           @click.prevent="handleLogin"
         >登录</van-button>
@@ -53,36 +53,35 @@ export default {
     return {
       user: {
         mobile: '13241993754',
-        code: '123456'
+        code: '246810'
       },
-      errors: {
+      myErrors: {
         mobile: '',
         code: ''
       },
-      loadingLogin: false
+      loginLoading: false
     }
+  },
+
+  created () {
+    this.configFormErrorMessages()
   },
 
   methods: {
     async handleLogin () {
       try {
-        const { mobile, code } = this.user
-        let errors = this.errors
-        if (mobile.length) {
-          errors.mobile = ''
-        } else {
-          errors.mobile = '手机号不能为空'
+        // 调用 JavaScript 触发验证
+        let valid = await this.$validator.validate()
+        console.log(valid)
+
+        // 如果校验失败，则停止后续代码执行
+        if (!valid) {
           return
         }
 
-        if (code.length) {
-          errors.code = ''
-        } else {
-          errors.code = '验证码不能为空'
-          return
-        }
+        // 表单通过验证，发送请求，loading 加载
+        this.loginLoading = true
 
-        this.loadingLogin = true
         let data = await login(this.user)
         this.$store.commit('setUser', data)
         /**
@@ -96,7 +95,28 @@ export default {
         console.log(err)
         console.log('登录失败')
       }
-      this.loadingLogin = false
+      this.loginLoading = false
+    },
+
+    // 错误消息提示
+    configFormErrorMessages () {
+      const dict = {
+        custom: {
+          mobile: {
+            required: '手机号不能为空'
+          },
+          code: {
+            required: '密码不能为空'
+          }
+        }
+      }
+
+      // 如果需要错误消息提示全局失效
+      // Validator.localize('en', dict)
+
+      // 组件中这也注册失效
+      // or use the instance method
+      this.$validator.localize('zh-CN', dict)
     }
   }
 }
