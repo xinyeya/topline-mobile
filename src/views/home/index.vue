@@ -73,7 +73,8 @@
                       局部：filter 选项，只能在组件内部使用
                   -->
                   <span>{{ item.pudate | relativeTime }}</span>
-                  <van-icon class="close" name="close" />
+                  <!-- 这里更多操作按钮的点击按钮 -->
+                  <van-icon class="close" name="close" @click="handleShowMoreAction(item)" />
               </p>
             </van-cell>
           </van-list>
@@ -104,7 +105,7 @@
       <!-- 更多操作弹框 -->
     <van-dialog v-model="isMoreActionShow" :showConfirmButton="false">
       <van-cell-group v-if="!toggleRubbish">
-        <van-cell title="不感兴趣" />
+        <van-cell title="不感兴趣" @click="handleDislick" />
         <van-cell title="反馈垃圾内容" is-link @click="toggleRubbish = true" />
         <van-cell title="反馈垃圾内容" />
       </van-cell-group>
@@ -129,7 +130,7 @@
 
 <script>
 import { getUserChannels } from '@/api/channel'
-import { getArticles } from '@/api/article'
+import { getArticles, dislikeArticle } from '@/api/article'
 import HomeChannel from './components/channel'
 
 export default {
@@ -146,8 +147,9 @@ export default {
       finished: false,
       pullRefreshLoading: false,
       isChannelShow: false, // 控制频道面板的显示状态
-      isMoreActionShow: true, // 控制更多操作弹框面板
-      toggleRubbish: false // 控制反馈垃圾弹框内容的提示
+      isMoreActionShow: false, // 控制更多操作弹框面板
+      toggleRubbish: false, // 控制反馈垃圾弹框内容的提示
+      currentArticle: null // 存储当前操作更多的文章
     }
   },
 
@@ -332,6 +334,39 @@ export default {
       } catch (err) {
         console.log(err)
       }
+    },
+
+    /**
+     * 处理显示更多操作弹框面板
+     */
+    handleShowMoreAction (item) {
+      // 将点击操作更多的文章存储起来，用于后续使用
+      this.currentArticle = item
+
+      // 显示弹框
+      this.isMoreActionShow = true
+    },
+
+    async handleDislick () {
+      // 拿到操作的文章 id
+      // 请求完成操作
+      const articleId = this.currentArticle.art_id.toString()
+
+      // 请求操作
+      await dislikeArticle(articleId)
+
+      // 隐藏对话框
+      this.isMoreActionShow = false
+
+      // 当前频道文章列表
+      const articles = this.activeChannel.articles
+
+      // 找不到喜欢的文章位于文章中的索引
+      // findIndex 是一个数组方法，它会遍历数组，找到满足 item.id === articleId 条件的数据 id
+      const delIndex = articles.findIndex(item => item.art_id.toString() === articleId)
+
+      // 把本条数据移除
+      articles.splice(delIndex, 1)
     }
   }
 }
