@@ -39,7 +39,8 @@ import {
   Grid,
   GridItem,
   Lazyload,
-  Image
+  Image,
+  dialog
 } from 'vant'
 
 Vue
@@ -65,6 +66,7 @@ Vue
   .use(GridItem)
   .use(Lazyload)
   .use(Image)
+  .use(dialog)
 
 Vue.use(VeeValidate, {
   events: '' // 禁用默认事件验证
