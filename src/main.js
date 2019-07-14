@@ -41,7 +41,8 @@ import {
   GridItem,
   Lazyload,
   Image,
-  dialog
+  dialog,
+  Search
 } from 'vant'
 
 Vue
@@ -68,6 +69,7 @@ Vue
   .use(Lazyload)
   .use(Image)
   .use(dialog)
+  .use(Search)
 
 Vue.use(VeeValidate, {
   events: '' // 禁用默认事件验证
