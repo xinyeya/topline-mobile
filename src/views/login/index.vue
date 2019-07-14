@@ -90,7 +90,6 @@ export default {
           name: 'home'
         })
       } catch (err) {
-        console.log(err)
         this.$toast.fail('登录失败')
       }
       this.loginLoading = false
@@ -109,7 +108,8 @@ export default {
       }
 
       // 如果需要错误消息提示全局生效
-      // Validator.localize('en', dict)
+      // Validator.localize('en', dict);
+
       // 组件中这也注册生效
       // or use the instance method
       this.$validator.localize('zh_CN', dict)

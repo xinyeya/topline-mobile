@@ -28,7 +28,12 @@ import {
   Tabs,
   List,
   PullRefresh,
-  Toast
+  Toast,
+  Icon,
+  Popup,
+  Overlay,
+  Tag,
+  Card
 } from 'vant'
 
 Vue
@@ -45,6 +50,11 @@ Vue
   .use(List)
   .use(PullRefresh)
   .use(Toast)
+  .use(Icon)
+  .use(Popup)
+  .use(Overlay)
+  .use(Tag)
+  .use(Card)
 
 Vue.use(VeeValidate, {
   events: '' // 禁用默认事件验证
