@@ -37,7 +37,9 @@ import {
   Tag,
   Card,
   Grid,
-  GridItem
+  GridItem,
+  Lazyload,
+  Image
 } from 'vant'
 
 Vue
@@ -61,6 +63,8 @@ Vue
   .use(Card)
   .use(Grid)
   .use(GridItem)
+  .use(Lazyload)
+  .use(Image)
 
 Vue.use(VeeValidate, {
   events: '' // 禁用默认事件验证
