@@ -44,7 +44,28 @@
               v-for="item in channelItem.articles"
               :key="item.art_id"
               :title="item.title"
-            />
+            >
+              <p slot="label">
+                <span>{{ item.aut_name }}</span>
+                &nbsp;
+                <span>{{ item.aut_name }}</span>
+                &nbsp;
+                <!-- <span>{{ relativeTime(item.pubdate) }}</span> -->
+                <!-- 
+                  | relativeTime 就是在调用过滤器函数
+                  过滤器函数接收的参数就是 | 前面的 item.pudate
+                  过滤器函数返回值输出到这里
+                 -->
+                 <!-- 
+                    过滤器说白了就是函数，在模板中调用函数的另一种方式
+                    一般用于格式化输出内容，其中不会有太多业务逻辑，一般都是对字符串的格式化处理
+                    过滤器可以定义到：
+                      全局：Vue.filter('过滤器名称')，可以在任何组件中使用
+                      局部：filter 选项，只能在组件内部使用
+                  -->
+                  <span>{{ item.pudate | relativeTime }}</span>
+              </p>
+            </van-cell>
           </van-list>
         </van-pull-refresh>
       </van-tab>
@@ -99,6 +120,12 @@ export default {
       isChannelShow: false // 控制频道面板的显示状态
     }
   },
+
+  // filter: {
+  //   relativeTime (val) {
+  //     return dayjs().from(dayjs(val))
+  //   }
+  // },
 
   computed: {
     activeChannel () {
