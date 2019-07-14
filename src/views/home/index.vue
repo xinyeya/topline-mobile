@@ -39,10 +39,11 @@
           >
             <!--
               列表中的内容
+              对于模板中的错误，推荐的调试方式就是：注释排除调试法
             -->
             <van-cell
               v-for="item in channelItem.articles"
-              :key="item.art_id"
+              :key="item.art_id.toString()"
               :title="item.title"
             >
               <div slot="label">
