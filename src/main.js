@@ -33,7 +33,9 @@ import {
   Popup,
   Overlay,
   Tag,
-  Card
+  Card,
+  Grid,
+  GridItem
 } from 'vant'
 
 Vue
@@ -55,6 +57,8 @@ Vue
   .use(Overlay)
   .use(Tag)
   .use(Card)
+  .use(Grid)
+  .use(GridItem)
 
 Vue.use(VeeValidate, {
   events: '' // 禁用默认事件验证

@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import { getAllChannels } from '@/api/channel'
+import { getAllChannels, deleteUserChannel } from '@/api/channel'
 
 export default {
   name: 'HomeChannel',
@@ -152,6 +152,7 @@ export default {
 
       // 如果登录已登录，则请求添加用户频道
       if (user) {
+        
       } else {
         // 如果没有登录，则添加到本地存储
         // 没有就创建，有的直接覆盖
@@ -160,7 +161,7 @@ export default {
       }
     },
 
-    handleUserChannelClick (item, index) {
+    async handleUserChannelClick (item, index) {
       // 如果是非编辑状态，则是切换 tab 显示
       if (!this.isEdit) {
         this.$emit('update:active-index', index)
@@ -177,6 +178,7 @@ export default {
 
       // 如果用户登录登录，则请求删除
       if (user) {
+        await deleteUserChannel(item.id)
         return
       }
 
