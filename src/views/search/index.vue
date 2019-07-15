@@ -5,6 +5,7 @@
         placeholder="请输入搜索关键词"
         v-model="searchText"
         show-action
+        @search="handleSearch(searchText)"
       />
     </form>
     <!-- 联想建议列表 -->
@@ -14,6 +15,7 @@
         v-for="item in suggestions"
         :key="item"
         :title="item"
+        @click="handleSearch(item)"
       >
         <!-- {{}} 无法输出 html 字符内容 -->
         <!-- v-html 指令才会解析字符串中的 html -->
@@ -73,12 +75,14 @@ export default {
       },
 
       handleSearch (q) {
-        this.$router,push({
+        this.$router.push({
           name: 'search-result',
           params: {
             q
           }
         })
+        // this.$router.push('/search/'+q)
+        // this.$router.push(`/search/${q}`)
       }
     }
   }
