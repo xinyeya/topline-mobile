@@ -1,10 +1,12 @@
 <template>
   <div>
-    <van-search
-      placeholder="请输入搜索关键词"
-      v-model="searchText"
-      show-action
-    />
+    <form action="/">
+      <van-search
+        placeholder="请输入搜索关键词"
+        v-model="searchText"
+        show-action
+      />
+    </form>
     <!-- 联想建议列表 -->
     <van-cell-group>
       <van-cell
@@ -68,6 +70,15 @@ export default {
       hightlight (text, keyword) {
         return text.toLowerCase().split(keyword)
                 .join(`<span style="color: red;">${keyword}</span>`)
+      },
+
+      handleSearch (q) {
+        this.$router,push({
+          name: 'search-result',
+          params: {
+            q
+          }
+        })
       }
     }
   }
