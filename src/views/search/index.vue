@@ -8,13 +8,13 @@
         @search="handleSearch(searchText)"
       />
     </form>
+
     <!-- 联想建议列表 -->
     <van-cell-group v-if="suggestions.length && searchText.length">
       <van-cell
         icon="search"
         v-for="item in suggestions"
         :key="item"
-        :title="item"
         @click="handleSearch(item)"
       >
         <!-- {{}} 无法输出 html 字符内容 -->
@@ -29,16 +29,29 @@
     <van-cell-group v-else>
       <van-cell title="历史记录">
         <van-icon
+          v-show="!isDeleteShow"
           slot="right-icon"
           name="delete"
           style="line-height: inherit;"
+          @click="isDeleteShow = true"
         />
+        <div v-show="isDeleteShow">
+          <span style="margin-right: 10px;" @click="serachHistories = []">全部删除</span>
+          <span @click="isDeleteShow = false">完成</span>
+        </div>
       </van-cell>
       <van-cell
-        v-for="item in searchHistories"
+        v-for="(item, index) in serachHistories"
         :key="item"
         :title="item"
       >
+        <van-icon
+          v-show="isDeleteShow"
+          slot="right-icon"
+          name="close"
+          style="line-height: inherit;"
+          @click="serachHistories.splice(index, 1)"
+        />
       </van-cell>
     </van-cell-group>
     <!-- /历史记录 -->
@@ -49,15 +62,15 @@
 import { getSuggestion } from '@/api/search'
 import { debounce } from 'lodash'
 export default {
-  name: '',
+  name: 'SearchIndex',
   data () {
     return {
-      searchText: '',
-      suggestions: [],
-      searchHistories: JSON.parse(window.localStorage.getItem('search-histories')) // 搜索记录
+      searchText: '', // 搜索输入的文本
+      suggestions: [], // 联想建议
+      serachHistories: JSON.parse(window.localStorage.getItem('serach-histories')), // 搜索历史记录
+      isDeleteShow: false
     }
   },
-
   watch: {
     // debounce 接收两个参数
     // 第1参数：执行你的业务逻辑的参数函数
@@ -71,41 +84,44 @@ export default {
       }
       // 如果数据不为空，则请求联想建议自动补全
       const data = await getSuggestion(newVal)
-        this.suggestions = data.options
-      }, 500)
-    },
-
+      this.suggestions = data.options
+    }, 500),
+    serachHistories: {
+      handler () {
+        // 保存搜索历史记录
+        window.localStorage.setItem(
+          'serach-histories',
+          JSON.stringify([...new Set(this.serachHistories)])
+        )
+      },
+      deep: true // 建议引用类型数据都配置为深度监视
+    }
+  },
+  deactivated () {
+    this.$destroy()
+  },
   methods: {
     hightlight (text, keyword) {
       return text.toLowerCase().split(keyword)
-              .join(`<span style="color: red;">${keyword}</span>`)
+        .join(`<span style="color: red;">${keyword}</span>`)
     },
-
     handleSearch (q) {
       if (!q.length) {
         return
       }
-
-      this.searchHistories.push(q)
-
-      // 保存搜索历史记录
-      window.localStorage.setItem(
-        'search-histories',
-        JSON.stringify([...new Set(this.searchHistories)])
-      )
+      this.serachHistories.unshift(q)
       // 跳转到搜索页面
-      // this.$router.push({
-      //   name: 'search-result',
-      //   params: {
-      //     q
-      //   }
-      // })
-      // this.$router.push('/search/'+q)
+      this.$router.push({
+        name: 'search-result',
+        params: {
+          q
+        }
+      })
+      // this.$router.push('/search/' + q)
       // this.$router.push(`/search/${q}`)
     }
   }
 }
 </script>
 
-<style lang="less" scoped>
-</style>
+<style lang="less" scoped></style>
