@@ -46,12 +46,12 @@ export default {
   name: '',
   data () {
     return {
-    	searchText: '',
-    	suggestions: []
+      searchText: '',
+      suggestions: []
     }
   },
 
-   watch: {
+  watch: {
     // debounce 接收两个参数
     // 第1参数：执行你的业务逻辑的参数函数
     // 第2参数：防抖时间
@@ -64,28 +64,28 @@ export default {
       }
       // 如果数据不为空，则请求联想建议自动补全
       const data = await getSuggestion(newVal)
-      	this.suggestions = data.options
-    	}, 500)
-  	},
+        this.suggestions = data.options
+      }, 500)
+    },
 
-    methods: {
-      hightlight (text, keyword) {
-        return text.toLowerCase().split(keyword)
-                .join(`<span style="color: red;">${keyword}</span>`)
-      },
+  methods: {
+    hightlight (text, keyword) {
+      return text.toLowerCase().split(keyword)
+              .join(`<span style="color: red;">${keyword}</span>`)
+    },
 
-      handleSearch (q) {
-        this.$router.push({
-          name: 'search-result',
-          params: {
-            q
-          }
-        })
-        // this.$router.push('/search/'+q)
-        // this.$router.push(`/search/${q}`)
-      }
+    handleSearch (q) {
+      this.$router.push({
+        name: 'search-result',
+        params: {
+          q
+        }
+      })
+      // this.$router.push('/search/'+q)
+      // this.$router.push(`/search/${q}`)
     }
   }
+}
 </script>
 
 <style lang="less" scoped>
