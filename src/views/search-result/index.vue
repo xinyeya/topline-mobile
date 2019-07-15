@@ -55,6 +55,13 @@ export default {
     }
   },
 
+  async created () {
+    // 如果觉得那样会很麻烦的话，也可以在组件上缓存失活的时候，直接手动销毁这个组件
+    // 下次进来的则会重新创建这个组件
+    // 说白了就是手动禁用了当前组件缓存
+    this.$destroy()
+  },
+
   watch: {
     '$route' (to, from) {
       // 对应路由变化做出响应，
@@ -82,14 +89,6 @@ export default {
     q () {
       return this.$route.params.q
     }
-  },
-
-  async created () {
-    const data = await getSearch({
-      q: this.$route.params.q,
-      page: 1
-    })
-    console.log(data)
   },
 
   methods: {
