@@ -1,4 +1,4 @@
-RecommendArticle<template>
+<template>
   <div>
     <p>推荐文章</p>
   </div>
