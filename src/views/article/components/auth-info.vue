@@ -32,7 +32,9 @@ export default {
     }
   },
 
-  created () {},
+  created () {
+    console.log(this.$route)
+  },
 
   computed: {},
 

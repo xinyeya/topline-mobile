@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import JSONbig from 'json-bigint'
 import { debounce } from 'lodash'
+import checkLogin from './utils/check-login'
 
 /**
  * 这个第三包引入即可，它会自动根据页面宽度设置网页基准字体大小
@@ -93,6 +94,9 @@ Vue.prototype.$sleep = time => {
 
 // 注册一个全局过滤器：处理相对时间
 Vue.filter('relativeTime', relativeTime)
+
+// 将检查登录状态挂载到 Vue 原型上，这样的话任何组件就都可以使用了
+Vue.prototype.$checkLogin = checkLogin
 
 Vue.config.productionTip = false
 
