@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import { followUser, unFollowUser } from '@/api/user'
 export default {
   name: 'AuthInfo',
   props:{
@@ -26,7 +27,9 @@ export default {
     }
   },
   data () {
-    return {}
+    return {
+      isFollowLoading: false
+    }
   },
 
   created () {},
@@ -34,8 +37,32 @@ export default {
   computed: {},
 
   methods: {
-    handleFollow () {
-      console.log('follow')
+    async handleFollow () {
+      this.isFollowLoading = true
+      try {
+        const authId = this.article.aut_id
+        console.log(this.article.is_followed)
+        if (this.article.is_followed) {
+          console.log(222)
+          // 取消关注
+          await unFollowUser(authId)
+          console.log(authId)
+
+          // 将客户端的关注状态设置为 false
+          this.article.is_followed = false
+        } else {
+          // 关注
+          await followUser(authId)
+
+          // 将客户端的关注状态设置为 true
+          this.article.is_followed = true
+        }
+
+      } catch (err) {
+        console.log(err)
+        this.$toast.fail('操作失败')
+      }
+      this.isFollowLoading = false
     }
   }
 }
