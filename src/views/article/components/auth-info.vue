@@ -8,7 +8,10 @@
       </div>
     </div>
     <div>
-      <van-button type="danger">关注</van-button>
+      <van-button
+        :type="article.is_followed ? 'default' : 'danger'"
+        @click="handleFollow"
+      >{{ article.is_followed ? '已关注' : '关注' }}</van-button>
     </div>
   </div>
 </template>
@@ -30,7 +33,11 @@ export default {
 
   computed: {},
 
-  methods: {}
+  methods: {
+    handleFollow () {
+      console.log('follow')
+    }
+  }
 }
 </script>
 
@@ -45,6 +52,7 @@ export default {
     align-items: center;
   }
   .avatar {
+    margin-right: 10px;
     width: 100px;
     height: 100px;
     border-radius: 100%;
