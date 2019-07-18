@@ -7,7 +7,7 @@
 <script>
 export default {
   name: 'RecommendArticle',
-  props:{},
+  props: {},
   data () {
     return {}
   },

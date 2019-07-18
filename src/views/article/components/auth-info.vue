@@ -20,7 +20,7 @@
 import { followUser, unFollowUser } from '@/api/user'
 export default {
   name: 'AuthInfo',
-  props:{
+  props: {
     article: {
       type: Object,
       default: () => {}
@@ -59,7 +59,6 @@ export default {
           // 将客户端的关注状态设置为 true
           this.article.is_followed = true
         }
-
       } catch (err) {
         console.log(err)
         this.$toast.fail('操作失败')
