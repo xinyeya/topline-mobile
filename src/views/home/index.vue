@@ -76,7 +76,7 @@
                   -->
                   <span>{{ item.pudate | relativeTime }}</span>
                   <!-- 这里更多操作按钮的点击按钮 -->
-                  <van-icon class="close" name="close" @click="handleShowMoreAction(item)" />
+                  <van-icon class="close" name="close" @click.stop="handleShowMoreAction(item)" />
               </p>
             </van-cell>
           </van-list>
