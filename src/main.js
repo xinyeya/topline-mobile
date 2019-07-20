@@ -2,103 +2,72 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import JSONbig from 'json-bigint'
-import { debounce } from 'lodash'
-import checkLogin from './utils/check-login'
-
-/**
- * 这个第三包引入即可，它会自动根据页面宽度设置网页基准字体大小
- */
+import Vant, { Lazyload } from 'vant'
+import 'vant/lib/index.css'
 import 'amfe-flexible'
-
-// 表单验证插件
-import VeeValidate, { Validator } from 'vee-validate'
+import './styles/index.less'
 import zhCN from 'vee-validate/dist/locale/zh_CN'
+import VeeValidate, { Validator } from 'vee-validate'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn' // 加载中文语言包
+import relativeTime from 'dayjs/plugin/relativeTime' // 把插件注册到 dayjs 中
+import checkLogin from './utils/check-login' // dayjs 的 相对时间插件
+dayjs.extend(relativeTime)
 
-import relativeTime from './filters/relative-time'
+// Vue.prototype.$checkLogin = checkLogin
+Vue.use(checkLogin)
 
-/**
- * 后面打包时重新导入
- */
-import {
-  Button,
-  Tabbar,
-  TabbarItem,
-  NavBar,
-  Field,
-  Cell,
-  CellGroup,
-  Loading,
-  Tab,
-  Tabs,
-  List,
-  PullRefresh,
-  Toast,
-  Icon,
-  Popup,
-  Overlay,
-  Tag,
-  Card,
-  Grid,
-  GridItem,
-  Lazyload,
-  Image,
-  dialog,
-  Search
-} from 'vant'
+// 更 Vue 的方式推荐奖这种注册方式写到插件中，本质没有任何区别，只是更 Vue 的风格而已。
+// Vue.component('组件名字', 组件选项对象)
+// Vue.prototype.xxx = xxx
 
-Vue
-  .use(Button)
-  .use(Tabbar)
-  .use(TabbarItem)
-  .use(NavBar)
-  .use(Field)
-  .use(Cell)
-  .use(CellGroup)
-  .use(Loading)
-  .use(Tab)
-  .use(Tabs)
-  .use(List)
-  .use(PullRefresh)
-  .use(Toast)
-  .use(Icon)
-  .use(Popup)
-  .use(Overlay)
-  .use(Tag)
-  .use(Card)
-  .use(Grid)
-  .use(GridItem)
-  .use(Lazyload)
-  .use(Image)
-  .use(dialog)
-  .use(Search)
+dayjs.locale('zh-cn') // 配置使用中文语言包
+
+// 注册一个全局过滤器来处理日期格式的展示
+// 过滤器就是一个函数，我们可以在模板中通过 {{ 数据 | 过滤器 }} 来调用这个过滤器函数
+// 过滤器函数接收的参数就是你的数据，返回值就会绑定输出到使用的位置
+// {{ 数据 | relativeTime }}
+// 好处：任何组件的模板都可以通过 {{ 数据 | 过滤器 }} 来使用这里定义的过滤器
+// 说白了就是一个全局函数
+Vue.filter('relativeTime', value => {
+  return dayjs().from(value)
+})
 
 Vue.use(VeeValidate, {
-  events: '' // 禁用默认事件验证
-  // events: 'change'
+  // 配置改变的时候去触发校验，默认是 input
+  // 配置文档：https://baianat.github.io/vee-validate/guide/events.html#changing-default-events
+  events: ''
 })
 
 Validator.localize('zh_CN', zhCN)
 
-Vue.prototype.$sleep = time => {
-  return new Promise((resolve, reject) => {
-    window.setTimeout(resolve, time)
-  })
-}
-
-Vue.prototype.$sleep = time => {
-  return new Promise((resolve, reject) => {
-    window.setTimeout(resolve, time)
-  })
-}
-
-// 注册一个全局过滤器：处理相对时间
-Vue.filter('relativeTime', relativeTime)
-
-// 将检查登录状态挂载到 Vue 原型上，这样的话任何组件就都可以使用了
-Vue.prototype.$checkLogin = checkLogin
+Vue.use(Vant)
+Vue.use(Lazyload)
 
 Vue.config.productionTip = false
+
+Vue.prototype.$sleep = time => {
+  return new Promise((resolve, reject) => {
+    window.setTimeout(() => {
+      resolve()
+    }, time)
+  })
+}
+
+Vue.prototype.$isLogin = () => {
+  // 校验登录状态
+
+  // 如果没有登录，则跳转到登录页
+  if (!store.state.user) {
+    router.push({
+      name: 'login'
+    })
+    return false
+  }
+
+  // 如果登录了执行后续逻辑操作
+  return true
+}
 
 new Vue({
   router,

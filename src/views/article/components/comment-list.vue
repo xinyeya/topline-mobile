@@ -17,14 +17,14 @@
           <span>{{ item.aut_name }}</span>
         </div>
         <div slot="default">
-          <van-button icon="like-o" size="mini" plain>赞{{ relativeTime }}</van-button>
+          <van-button :icon="item.is_liking ? 'like' : 'like-o'" size="mini" plain>赞</van-button>
         </div>
         <div slot="label">
           <p>{{ item.content }}</p>
           <p>
             <span>{{ item.pubdate | relativeTime }}</span>
             ·
-            <span @click="$emit('is-replylist-show', item.com_id.toString())">回复{{ item.reply_count }}</span>
+            <span @click="handleShowReply(item)">回复 {{ item.reply_count }}</span>
           </p>
         </div>
       </van-cell>
@@ -34,12 +34,15 @@
 
 <script>
 import { getComments } from '@/api/comment'
+import globalBus from '@/utils/global-bus'
 
 export default {
   name: 'CommentList',
   props: {
     /**
-     * 数据 id, 文章 id, 或是评论 id
+     * source 是文章id或是评论id
+     * 文章id用于获取文章的评论
+     * 评论id用于获取评论的回复
      */
     source: {
       type: [Number, String],
@@ -47,14 +50,7 @@ export default {
     },
 
     /**
-     * source 是否是文章，默认当做文章
-     */
-    commentId: {
-      type: [Number, String]
-    },
-
-    /**
-     * source 是否是文章，默认当做文章
+     * 你是要加载文章的评论呢？还是要加载评论的回复
      */
     isArticle: {
       type: Boolean,
@@ -66,41 +62,46 @@ export default {
       comments: [],
       loading: false,
       finished: false,
-      offset: null,
-      limit: 10
+      offset: null
     }
+  },
+
+  created () {
   },
 
   methods: {
     async onLoad () {
+      console.log('oLoad')
       const data = await getComments({
         source: this.source,
         offset: this.offset,
-        limit: this.limit,
-        isArticle: this.isArticle // 获取文章评论？还是获取评论的回复
+        limit: 10, // 默认为 10
+        isArticle: this.isArticle
       })
-      // 如果数组为空，则表示没有数据了
+
+      // 如果没有数据，则意味着评论加载完毕了
       if (!data.results.length) {
         this.finished = true
         this.loading = false
         return
       }
-      // 如果有数据，添加数据
+
+      // 有数据，将数据添加到评论列表中
       this.comments.push(...data.results)
+
       // 将本次的 loading 设置为 false
       this.loading = false
-      // 将本次数据拿到的 last_id 保存起来，用于下一次 onLoad 加载下一页数据
+
+      // 提供下一页的请求参数
       this.offset = data.last_id
+    },
+
+    handleShowReply (item) {
+      globalBus.$emit('reply-show', item)
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 100%;
-  margin-right: 10px;
-}
 </style>

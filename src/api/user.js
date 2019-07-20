@@ -1,12 +1,14 @@
 /**
- * 用户相关接口封装模块
- * 最佳实践：建议将所有的请求都封装装成一个一个的小函数，在需要的时候直接调用
- * 好处：1. 好维护，同一管理，2. 可重用
- * 遵循一个原则：不要直接在组件中发请求，都封装成函数进行调用
+ * 封装用户相关接口请求函数
  */
+
 import request from '@/utils/request'
 
+/**
+ * 用户登录
+ */
 export const login = ({ mobile, code }) => {
+  // 指向其他逻辑
   return request({
     method: 'POST',
     url: '/app/v1_0/authorizations',
@@ -18,9 +20,10 @@ export const login = ({ mobile, code }) => {
 }
 
 /**
- * 拉黑用户（添加黑名单）
+ * 拉黑用户（加入黑名单）
  */
 export const addBlacklist = userId => {
+  // 指向其他逻辑
   return request({
     method: 'POST',
     url: '/app/v1_0/user/blacklists',
@@ -34,6 +37,7 @@ export const addBlacklist = userId => {
  * 关注用户
  */
 export const followUser = userId => {
+  // 指向其他逻辑
   return request({
     method: 'POST',
     url: '/app/v1_0/user/followings',
@@ -50,5 +54,25 @@ export const unFollowUser = userId => {
   return request({
     method: 'DELETE',
     url: `/app/v1_0/user/followings/${userId}`
+  })
+}
+
+/**
+ * 获取当前登录用户的个人信息
+ */
+export const getCurrentUserInfo = () => {
+  return request({
+    method: 'GET',
+    url: `/app/v1_0/user`
+  })
+}
+
+/**
+ * 获取当前登录用户的基本信息
+ */
+export const getCurrentUserProfile = () => {
+  return request({
+    method: 'GET',
+    url: `/app/v1_0/user/profile`
   })
 }

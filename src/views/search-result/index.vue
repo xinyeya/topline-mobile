@@ -1,6 +1,6 @@
 <template>
-  <div class="search-result">
-    <!-- 顶部导航 -->
+  <div>
+    <!-- 导航头部 -->
     <van-nav-bar
       title="搜索结果"
       left-text="返回"
@@ -8,7 +8,7 @@
       fixed
       @click-left="$router.back()"
     />
-    <!-- /顶部导航 -->
+    <!-- /导航头部 -->
 
     <!-- 文章列表 -->
     <van-list
@@ -19,70 +19,52 @@
       @load="onLoad"
     >
       <van-cell
-        v-for="item in articles"
-        :key="item.art_id.toString()"
-        :title="item.title"
-      />
+        v-for="articleItem in articles"
+        :key="articleItem.art_id.toString()"
+        :title="articleItem.title">
+        <div slot="label">
+          <template v-if="articleItem.cover.type">
+            <van-grid :border="false" :column-num="3">
+              <van-grid-item
+                v-for="(img, index) in articleItem.cover.images"
+                :key="index"
+              >
+                <van-image :src="img" lazy-load />
+              </van-grid-item>
+            </van-grid>
+          </template>
+          <p>
+            <span>{{ articleItem.aut_name }}</span>
+            &nbsp;
+            <span>{{ articleItem.comm_count }}评论</span>
+            &nbsp;
+            <span>{{ articleItem.pubdate | relativeTime }}</span>
+          </p>
+          <van-grid :column-num="3">
+            <van-grid-item @click="$isLogin()" text="评论"/>
+            <van-grid-item text="点赞"/>
+            <van-grid-item text="分享"/>
+          </van-grid>
+        </div>
+      </van-cell>
     </van-list>
     <!-- /文章列表 -->
   </div>
 </template>
 
 <script>
-/**
- * 这里有两个缓存：
- *   组件缓存
- *     生命周期不会重走，页面的切换会销毁重建
- * 路由本身的缓存
- *   当你从 a 路径导航到 b 路径的时候
- *   由于 a 路径和 b 路径使用的都是同一个组件，那么此时默认给你路由缓存
- * 例如我从 /search/a 到 /search/b 重用了
- * 但是我从 /search/xxx 到 /非search 没有缓存（前提是不是同一个组件）
- * /search 就销毁了
- */
 import { getSearch } from '@/api/search'
 
 export default {
   name: 'SearchResult',
   data () {
     return {
-      list: [],
+      articles: [],
       loading: false,
       finished: false,
       page: 1,
-      perPage: 10,
-      articles: []
+      perPage: 20
     }
-  },
-
-  async created () {
-    // 如果觉得那样会很麻烦的话，也可以在组件上缓存失活的时候，直接手动销毁这个组件
-    // 下次进来的则会重新创建这个组件
-    // 说白了就是手动禁用了当前组件缓存
-    this.$destroy()
-  },
-
-  watch: {
-    '$route' (to, from) {
-      // 对应路由变化做出响应，
-      console.log('路由变化了')
-    }
-  },
-
-  /**
-   * 组件缓存的情况下：页面显示出来调用它
-   */
-  actived () {
-    this.loading = true
-    this.onLoad()
-  },
-
-  /**
-   * 组件缓存的情况下：页面隐藏调用它
-   */
-  deactivated () {
-    this.articles = []
-    this.page = 1
   },
 
   computed: {
@@ -91,46 +73,52 @@ export default {
     }
   },
 
+  activated () {
+    console.log('activated')
+  },
+
+  deactivated () {
+    // console.log('deactivated')
+
+    // 手动销毁当前实例，禁用缓存！！！
+    this.$destroy()
+  },
+
   methods: {
     async onLoad () {
       await this.$sleep(800)
-
-      const data = await this.getSearchResults()
-
-      // 如果请求结果数组为空，则设置 List 组件已加载结束
-      if (!data.results.length) {
-        this.loading = false
-        this.finished = true
-        return
-      }
-
-      // 如果有数据，则将本次加载到的数据 push 到列表数组中
-      this.articles.push(...data.result)
-
-      // 数据加载完毕，更新当前页码为下一页，用于下一次加载更多
-      this.page += 1
-
-      // 结束当前加载的 loading
-      // List 列表组件每次 onLoad 会自动将 loading 设置为 true
-      // 如果你不设置的话，它不会触发下一次的 onload
-      this.loading = false
-    },
-
-    getSearchResults () {
-      return getSearch({
+      const data = await getSearch({
         page: this.page,
         perPage: this.perPage,
         q: this.q
       })
+
+      // 如果没有数据了
+      if (!data.results.length) {
+        // 取消 loading
+        this.loading = false
+
+        // 设置数据已加载结束
+        this.finished = true
+
+        return
+      }
+
+      // 如果有数据，将数据 push 到数组中加载更多
+      this.articles.push(...data.results)
+
+      // 更新下一次加载更多的页码
+      this.page += 1
+
+      // 本地数据加载完毕，关闭 loading（它每次 onLoad 的时候会自动将 loading 设置为 true）
+      this.loading = false
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.search-result {
-  .article-list {
-    margin-top: 92px;
-  }
+.article-list {
+  margin-top: 92px;
 }
 </style>

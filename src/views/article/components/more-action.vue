@@ -1,18 +1,16 @@
 <template>
   <div class="more-action">
     <van-button
-      icon="star-o"
+      :icon="isLike ? 'like' : 'like-o'"
       round
       :loading="isLikeLoading"
-      :type="isLike ? 'danger' : 'default'"
       @click="handleLike"
     >{{ isLike ? '取消' : '' }}点赞</van-button>
 
     <van-button
-      icon="delete"
+      :icon="isDislike ? 'delete' : 'bag'"
       round
       :loading="isDislikeLoading"
-      :type="isDislike ? 'danger' : 'default'"
       @click="handleDislike"
     >{{ isDislike ? '取消' : '' }}不喜欢</van-button>
   </div>
@@ -25,6 +23,7 @@ import {
   dislikeArticle,
   unDislikeArticle
 } from '@/api/article'
+
 export default {
   name: 'MoreAction',
   props: {
@@ -33,12 +32,14 @@ export default {
       default: () => {}
     }
   },
+
   data () {
     return {
       isLikeLoading: false,
       isDislikeLoading: false
     }
   },
+
   computed: {
     isLike () {
       return this.article.attitude === 1
@@ -47,21 +48,21 @@ export default {
       return this.article.attitude === 0
     }
   },
-  created () {},
+
   methods: {
     async handleLike () {
+      if (!this.$checkLogin()) {
+        return
+      }
       try {
-        if (!this.$checkLogin()) {
-          return
-        }
         this.isLikeLoading = true
         const articleId = this.article.art_id
-        // 如果已赞，则取消点赞
-        if (this.article.attitude === 1) {
+        if (this.isLike) {
+          // 取消点赞
           await unLikeArticle(articleId)
           this.article.attitude = -1
         } else {
-          // 如果没有赞，则赞
+          // 点赞
           await likeArticle(articleId)
           this.article.attitude = 1
         }
@@ -70,19 +71,21 @@ export default {
       }
       this.isLikeLoading = false
     },
+
     async handleDislike () {
+      if (!this.$checkLogin()) {
+        return
+      }
+
       try {
-        if (!this.$checkLogin()) {
-          return
-        }
         this.isDislikeLoading = true
         const articleId = this.article.art_id
-        // 如果已不喜欢，则取消已不喜欢
-        if (this.article.attitude === 0) {
+        if (this.isDislike) {
+          // 取消不喜欢
           await unDislikeArticle(articleId)
           this.article.attitude = -1
         } else {
-          // 如果已取消不喜欢，则不喜欢
+          // 不喜欢
           await dislikeArticle(articleId)
           this.article.attitude = 0
         }

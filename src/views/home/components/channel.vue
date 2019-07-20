@@ -1,16 +1,11 @@
 <template>
-  <!--
-    v-model 是：
-      v-bind:value="数据"
-      v-on:input="数据 = $event"
-    lazy-render 关闭懒加载
-   -->
   <van-popup
+    :style="{ height: '95%' }"
     :value="value"
     @input="$emit('input', $event)"
     position="bottom"
     get-container="body"
-    :style="{ height: '95%' }"
+    :lazy-render="false"
   >
     <!-- 我的频道 -->
     <div class="channel">
@@ -38,7 +33,7 @@
             class="text"
             :class="{ active: index === activeIndex && !isEdit }"
           >{{ item.name }}</span>
-          <van-icon class="close-icon" v-show="isEdit" name="close" />
+          <van-icon class="close-icon" v-show="isEdit && !aliveChannels.includes(item.name)" name="close" />
         </van-grid-item>
       </van-grid>
     </div>
@@ -72,8 +67,10 @@
 import {
   getAllChannels,
   deleteUserChannel,
-  updateUserChannel
+  resetUserChannels
 } from '@/api/channel'
+
+import { mapState } from 'vuex'
 
 export default {
   name: 'HomeChannel',
@@ -95,21 +92,26 @@ export default {
 
   data () {
     return {
-      allChannels: [],
-      isEdit: false
+      allChannels: [], // 所有的频道列表
+      isEdit: false,
+      aliveChannels: ['推荐']
     }
   },
 
   computed: {
     /**
-     * 该计算属性用于处理获取推荐数据（也就是不包含用户频道列表的其它所有频道列表）
-     * 计算属性其实也拥有 watch 的功能，但它的作用是用于当数据改变之后重新计算返回一些数据供我们使用
+     * 过滤出不包含用户频道的列表数据
+     * 计算属性会监视内部依赖的实例中的成员，当数据发生改变，它会重新调用计算
      */
     recommendChannels () {
-      // 拿到所有重复的数据 id
+      // 从用户频道列表中映射一个数组，数组中存储了所有的用户频道 id
       const duplicates = this.userChannels.map(item => item.id)
+
       return this.allChannels.filter(item => !duplicates.includes(item.id))
-    }
+    },
+    // Vuex 的辅助方法，用来将 state 中的数据映射到本地计算属性
+    // 说白就是 user = this.$store.state.user
+    ...mapState(['user'])
   },
 
   created () {
@@ -118,79 +120,70 @@ export default {
 
   methods: {
     async loadAllChannels () {
-      try {
-        const data = await getAllChannels()
-
-        // 将获取到的频道数据统一处理成我们需要的数据格式
-        data.channels.forEach(item => {
-          item.articles = [] // 频道的文章
-          item.timestamp = Date.now() // 用于下一页频道数据的时间戳
-          item.finished = false // 控制该频道上拉加载是否已加载完毕
-          item.upLoading = false // 控制该频道的下拉刷新 loading
-          item.pullRefreshLoading = false // 控制频道列表的下拉刷新状态
-          item.pullSuccessText = '' // 控制频道列表的下拉刷新成功提示文字
-        })
-
-        this.allChannels = data.channels
-      } catch (err) {
-        console.log(err)
-      }
+      const data = await getAllChannels()
+      data.channels.forEach(item => {
+        item.articles = [] // 用来存储当前文章的列表
+        item.timestamp = Date.now() // 存储下一页数据的时间戳
+        item.downPullLoading = false // 控制当前频道的下拉刷新 loading 状态
+        item.upPullLoading = false // 控制当前频道的上拉加载更多的 loading 状态
+        item.upPullFinished = false // 控制当前频道数据是否加载完毕
+      })
+      this.allChannels = data.channels
     },
 
     async handleAddChannel (item) {
-      // userChannels 是 props 数据
-      // props 数据有个原则：单向数据流
-      //    数据只受父组件影响，但是反之不会
-      //    但是引用类型除外
-      //    即便是这样：也最好不要利用这个特点
-      // 建议做法就是将数据传递给父组件，让组件自己去修改
-      // this.userChannels.push(item)
+      // 将点击添加的频道添加到用户频道中
+      this.userChannels.push(item)
 
-      // 截取一个新的数组，操作这个数组，操作结束将结果传递给父组件，让父组件自己去修改
-      // 始终记住一个原则：Props 数据是单向的，不要在子组件中修改它，始终由父组件去修改从而影响它
-      const channels = this.userChannels.slice(0)
-      channels.push(item)
-      this.$emit('update:user-channels', channels)
+      // 持久化：
+      if (this.user) {
+        // 如果用户已登录，则将数据请求添加到后端
+        const data = this.userChannels.slice(1).map((item, index) => {
+          return {
+            id: item.id, // 频道id
+            seq: index + 2
+          }
+        })
 
-      const { user } = this.$store.state
-
-      // 如果登录已登录，则请求添加用户频道
-      if (user) {
-        // await updateUserChannel([{
-        //   id: item.id,
-        //   seq: channels.length - 1 // 序号
-        // }])
-      } else {
-        // 如果没有登录，则添加到本地存储
-        // 没有就创建，有的直接覆盖
-        // 注意：本地存储数据无法像 js 数据变量去修改，要想改变只能完全重写
-        window.localStorage.setItem('channels', JSON.stringify(channels))
-      }
-    },
-
-    async handleUserChannelClick (item, index) {
-      // 如果是非编辑状态，则是切换 tab 显示
-      if (!this.isEdit) {
-        this.$emit('update:active-index', index)
-        this.$emit('input', false)
+        await resetUserChannels(data)
         return
       }
 
-      // 如果是编辑状态，则是删除操作
-      const channels = this.userChannels.slice(0)
-      channels.splice(index, 1)
-      this.$emit('update:user-channels', channels)
+      // 如果未登录，则将数据持久化到本地存储
+      window.localStorage.setItem('channels', JSON.stringify(this.userChannels))
+    },
 
-      const { user } = this.$store.state
+    changeChannel (item, index) {
+      this.$emit('update:active-index', index)
+      this.$emit('input', false)
+    },
 
-      // 如果用户登录登录，则请求删除
-      if (user) {
+    async deleteChannel (item, index) {
+      this.userChannels.splice(index, 1)
+
+      // TODO: 删除当前频道，下一个激活的频道没有数据的问题
+      // 手动的设置一下当前激活的标签索引，用来触发那个 onLoad 调用，否则可能会看不到那个数据
+      // this.$emit('update:active-index', 1)
+      // 判断当前激活频道中是否有数据，如果没有则手动的 onLoad 一下
+
+      if (this.user) {
+        // 登录：发请求删除
         await deleteUserChannel(item.id)
         return
       }
 
-      // 如果用户没有登录， 则将数据保存到本地存储
-      window.localStorage.setItem('channels', JSON.stringify(channels))
+      // 未登录，删除本地存储的数据
+      window.localStorage.setItem('channels', JSON.stringify(this.userChannels))
+    },
+
+    handleUserChannelClick (item, index) {
+      if (!this.isEdit) {
+        // 非编辑状态：切换频道
+        this.changeChannel(item, index)
+      } else {
+        // 编辑状态：删除频道
+        !this.aliveChannels.includes(item.name) && this.deleteChannel(item, index)
+      }
     }
   }
 }
@@ -202,7 +195,6 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
     padding: 10px;
     .title {
       font-size: 30px;
@@ -221,7 +213,7 @@ export default {
       color: red;
     }
     .close-icon {
-      font-size: 40px;
+      font-size: 30px;
       position: absolute;
       top: -5px;
       right: -5px;

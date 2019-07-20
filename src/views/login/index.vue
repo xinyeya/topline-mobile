@@ -1,40 +1,36 @@
 <template>
   <div class="login-wrap">
-    <!-- 头部 -->
-    <van-nav-bar title="登录"/>
-
-    <!-- 表单 -->
+    <van-nav-bar title="标题"/>
     <form>
       <van-cell-group>
         <van-field
           v-model="user.mobile"
+          v-validate="'required'"
+          name="mobile"
+          :error-message="errors.first('mobile')"
           required
           clearable
           label="手机号"
           placeholder="请输入手机号"
-          v-validate="'required'"
-          name="mobile"
-          :error-message="errors.first('mobile')"
         />
 
         <van-field
           v-model="user.code"
-          type="password"
-          label="密码"
-          placeholder="请输入密码"
           v-validate="'required'"
           name="code"
           :error-message="errors.first('code')"
+          type="code"
+          label="验证码"
+          placeholder="请输入验证码"
+          required
         />
       </van-cell-group>
-
-      <div class="login-btn-box">
+      <div class="login-btn">
         <van-button
-          class="login-btn"
+          class="btn"
           type="info"
-          :loading="loginLoading"
-          loading-text="登录中..."
           @click.prevent="handleLogin"
+          :loading="loginLoading"
         >登录</van-button>
       </div>
     </form>
@@ -48,70 +44,68 @@ export default {
   name: 'LoginIndex',
   data () {
     return {
-      user: { // 提交登录的表单数据
+      user: {
         mobile: '18801185985',
-        code: '246810'
+        code: '123456'
       },
-      loginLoading: false, // 控制登录按钮的 loading 状态
-      myErrors: {
-        mobile: '',
-        code: ''
-      }
+      loginLoading: false // 控制登录请求的 loading 状态
     }
   },
 
   created () {
-    this.configFormErrorMessages()
+    this.configCustomMessages()
   },
 
   methods: {
     async handleLogin () {
+      this.loginLoading = true
       try {
-        // 调用 JavaScript 触发验证
+        // 这个插件的 JavaScript 验证方法设计的不好，并没有在验证失败的时候抛出异常
         const valid = await this.$validator.validate()
 
-        // 如果校验失败，则停止后续代码执行
+        // 如果表单验证失败，则什么都不做
         if (!valid) {
+          // 验证失败，代码不会往后执行了，所以在这里也要取消 loading
+          this.loginLoading = false
           return
         }
 
-        // 表单验证通过，发送请求，loading 加载
-        this.loginLoading = true
-
+        // 表单验证通过，提交表单
         const data = await login(this.user)
 
+        // 通过提交 mutation 更新 Vuex 容器中的装填
         this.$store.commit('setUser', data)
 
-        /**
-         * 这里先简单粗暴的跳转到首页
-         * 真实的业务要处理成跳转到之前过来的的页面
-         */
-        this.$router.push({
-          name: 'home'
-        })
+        // 登录成功，先简单粗暴的跳转到首页，后面再处理跳转到来的页面
+        // this.$router.push({
+        //   name: 'home'
+        // })
+
+        // 方式一：直接 back()
+        // this.$router.back()
+
+        // 方式二：使用查询字符串记录起来
+        const redirect = this.$route.query.redirect || '/'
+        this.$router.push(redirect)
       } catch (err) {
-        this.$toast.fail('登录失败')
+        console.log(err)
+
+        this.$toast.fail('登录失败！')
       }
       this.loginLoading = false
     },
 
-    configFormErrorMessages () {
+    configCustomMessages () {
       const dict = {
         custom: {
           mobile: {
             required: '手机号不能为空'
           },
           code: {
-            required: '密码不能为空'
+            required: () => '验证码不能为空'
           }
         }
       }
-
-      // 如果需要错误消息提示全局生效
-      // Validator.localize('en', dict);
-
-      // 组件中这也注册生效
-      // or use the instance method
       this.$validator.localize('zh_CN', dict)
     }
   }
@@ -119,9 +113,9 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.login-btn-box {
-  padding: 20px;
-  .login-btn {
+.login-btn {
+  padding: 10px;
+  .btn {
     width: 100%;
   }
 }

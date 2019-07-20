@@ -11,7 +11,15 @@ export default new Router({
       component: () => import('@/views/home')
     },
     {
+      name: 'my',
+      path: '/my',
+      component: () => import('@/views/my')
+    },
+    {
       name: 'login',
+      // 任何路径的匹配都不包括 ?xxxx 内容
+      // router.query 获取查询字符串(？key=value&key=value....)参数
+      // router.params 获取动态路径（:xxx）参数
       path: '/login',
       component: () => import('@/views/login')
     },
@@ -29,6 +37,16 @@ export default new Router({
       name: 'article',
       path: '/article/:articleId',
       component: () => import('@/views/article')
+    },
+    {
+      name: 'user-profile',
+      path: '/user-profile',
+      component: () => import('@/views/user-profile')
+    },
+    {
+      name: 'test',
+      path: '/test',
+      component: () => import('@/views/test')
     }
   ]
 })
