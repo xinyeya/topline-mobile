@@ -12,7 +12,10 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn' // 加载中文语言包
 import relativeTime from 'dayjs/plugin/relativeTime' // 把插件注册到 dayjs 中
 import checkLogin from './utils/check-login' // dayjs 的 相对时间插件
+import AppTabbar from './components/app-tabbar'
 dayjs.extend(relativeTime)
+
+Vue.component('app-tabbar', AppTabbar)
 
 // Vue.prototype.$checkLogin = checkLogin
 Vue.use(checkLogin)

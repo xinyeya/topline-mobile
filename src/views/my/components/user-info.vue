@@ -6,7 +6,7 @@
       :border="false"
       @click="$router.push({ name: 'user-profile' })"
     >
-      <div slot="title">
+      <div slot="title" @click="$router.push({ name: 'user-settings' })">
         <img class="avatar" :src="user.photo" alt="">
         <span class="title">{{ user.name }}</span>
       </div>
@@ -33,12 +33,26 @@
 </template>
 
 <script>
+import { getMyInfo } from '@/api/user'
 export default {
   name: 'UserInfo',
-  props: {
-    user: {
-      type: Object,
-      default: () => {}
+  data () {
+    return {
+      user: {}
+    }
+  },
+
+  created () {
+    this.loadUser()
+  },
+
+  methods: {
+    async loadUser () {
+      try {
+        this.user = await getMyInfo()
+      } catch (err) {
+        this.$toast.fail('加载用户信息失败')
+      }
     }
   }
 }
