@@ -4,8 +4,9 @@
       class="base-info"
       is-link
       :border="false"
+      @click="$router.push({ name: 'user-settings' })"
     >
-      <div slot="title" @click="$router.push({ name: 'user-settings' })">
+      <div slot="title">
         <img class="avatar" :src="user.photo" alt="">
         <span class="title">{{ user.name }}</span>
       </div>
