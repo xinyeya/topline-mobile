@@ -80,9 +80,19 @@ export const getCurrentUserProfile = () => {
 /**
  * 获取用户自己的信息
  */
-export const getMyInfo = userId => {
+export const getMyInfo = () => {
   return request({
     method: 'GET',
     url: `/app/v1_0/user`
+  })
+}
+
+/**
+ * 获取用于编辑的用户信息
+ */
+export const getUserProfile = () => {
+  return request({
+    method: 'GET',
+    url: `/app/v1_0/user/profile`
   })
 }

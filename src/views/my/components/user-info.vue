@@ -4,7 +4,6 @@
       class="base-info"
       is-link
       :border="false"
-      @click="$router.push({ name: 'user-profile' })"
     >
       <div slot="title" @click="$router.push({ name: 'user-settings' })">
         <img class="avatar" :src="user.photo" alt="">
